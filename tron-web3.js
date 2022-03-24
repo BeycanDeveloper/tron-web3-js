@@ -37,7 +37,7 @@ class TronWeb3 {
                 return reject('wallet-not-detected');
             }
 
-            if (tronLink.tronWeb.fullNode.host != this.network.host) {
+            if (tronWeb.fullNode.host != this.network.host) {
                 return reject('not-accepted-network');
             }
 
