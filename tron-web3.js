@@ -37,11 +37,15 @@ class TronWeb3 {
                 return reject('wallet-not-detected');
             }
 
-            if (tronWeb.fullNode.host != this.network.host) {
-                return reject('not-accepted-network');
+            let result = await tronLink.request({method: 'tron_requestAccounts'});
+            
+            if (!result) {
+                return reject('locked');
             }
 
-            let result = await tronLink.request({method: 'tron_requestAccounts'});
+            if (tronLink.tronWeb.fullNode.host != this.network.host) {
+                return reject('not-accepted-network');
+            }
 
             if (result.code == 4001) {
                 return reject('request-rejected');
@@ -66,6 +70,11 @@ class TronWeb3 {
     trxTransfer(toAddress, amount) {
         return new Promise(async (resolve, reject) => {
             try {
+
+                if (parseFloat(amount) > await this.getTrxBalance()) {
+                    return reject('insufficient-balance');
+                }
+
                 amount = tronLink.tronWeb.toSun(amount);
                 let {txid} = await tronLink.tronWeb.trx.sendTransaction(toAddress, amount);
                 return resolve(this.transaction(txid));
@@ -82,6 +91,10 @@ class TronWeb3 {
     tokenTransfer(toAddress, amount, tokenAddress) {
         return new Promise(async (resolve, reject) => {
             try {
+
+                if (parseFloat(amount) > await this.getTokenBalance(tokenAddress)) {
+                    return reject('insufficient-balance');
+                }
 
                 let token = await tronLink.tronWeb.contract().at(tokenAddress);
                 let decimals = parseFloat((await token.decimals().call()).toString(10));
@@ -122,6 +135,18 @@ class TronWeb3 {
                 return reject(error);
             }
         });
+    }
+
+    async getTokenBalance(tokenAddress) {
+        let token = await tronLink.tronWeb.contract().at(tokenAddress);
+        let decimals = parseFloat((await token.decimals().call()).toString(10));
+        let balance = await token.balanceOf(this.connectedAccount).call();
+
+        return Utils.toDec(balance._hex, decimals);
+    }
+
+    async getTrxBalance() {
+        return parseFloat(tronLink.tronWeb.fromSun(await tronLink.tronWeb.trx.getBalance(this.connectedAccount)));
     }
 
     isTronLink() {
