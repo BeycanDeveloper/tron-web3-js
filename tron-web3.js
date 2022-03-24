@@ -15,10 +15,12 @@ class TronWeb3 {
 
     networks = {
         mainnet: {
+            name: "TronGrid Mainnet",
             host: "https://api.trongrid.io",
             explorer: "https://tronscan.io/"
         },
         testnet: {
+            name: "Nile Testnet",
             host: "https://api.nileex.io",
             explorer: "https://nile.tronscan.org/"
         }
