@@ -1,0 +1,51 @@
+{
+  "name": "tron-web3",
+  "version": "1.0.0",
+  "description": "Tron has ready-made methods to connect to wallets and perform many transactions.",
+  "targets": {
+    "frontend": {
+      "source": "tron-web3.js"
+    },
+    "module": false,
+    "main": false,
+    "types": false
+  },
+  "scripts": {
+    "serve": "parcel test.html --no-cache --dist-dir test",
+    "build": "parcel build --no-cache --no-source-maps --dist-dir dist",
+    "build-w": "parcel watch --no-cache --no-source-maps --dist-dir dist"
+  },
+  "main": "tron-web3.js",
+  "browser": "dist/tron-web3.js",
+  "module": "dist/tron-web3.js",
+  "types": "tron-web3.js.d.ts",
+  "typings": "tron-web3.js",
+  "prepublishOnly": "npm run build",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BeycanDeveloper/tron-web3-js.git"
+  },
+  "keywords": [
+    "Tron",
+    "crypto",
+    "payment"
+  ],
+  "author": "Halil Beycan",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/BeycanDeveloper/tron-web3-js/issues"
+  },
+  "homepage": "https://github.com/BeycanDeveloper/tron-web3-js",
+  "dependencies": {
+    "@beycandeveloper/tron-tx-decoder": "^2.0.4",
+    "bignumber.js": "^9.0.2"
+  },
+  "devDependencies": {
+    "@parcel/transformer-vue": "^2.3.2",
+    "assert": "^2.0.0",
+    "buffer": "^6.0.3",
+    "events": "^3.3.0",
+    "process": "^0.11.10",
+    "stream-browserify": "^3.0.0"
+  }
+}

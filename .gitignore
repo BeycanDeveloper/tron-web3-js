@@ -1,0 +1,5 @@
+test
+.parcel-cache
+node_modules
+test.html
+build-test.html
