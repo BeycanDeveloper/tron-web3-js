@@ -115,6 +115,7 @@ class Transaction {
      */
     async verifyData(receiver, amount, tokenAddress = null) {
 
+        receiver = receiver.toLowerCase();
         if (!tokenAddress || tokenAddress == 'TRX') {
 
             let params = this.data.raw_data.contract[0].parameter.value;
