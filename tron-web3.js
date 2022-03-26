@@ -45,12 +45,12 @@ class TronWeb3 {
                 return reject('locked');
             }
 
-            if (tronLink.tronWeb.fullNode.host != this.network.host) {
-                return reject('not-accepted-network');
-            }
-
             if (result.code == 4001) {
                 return reject('request-rejected');
+            }
+
+            if (tronLink.tronWeb.fullNode.host != this.network.host) {
+                return reject('not-accepted-network');
             }
 
             this.connectedAccount = tronLink.tronWeb.defaultAddress.base58;
