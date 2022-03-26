@@ -170,10 +170,9 @@ class Transaction {
     }
 
     /**
-     * @param {String} receiver
      * @returns {String}
      */
-    getTransactionUrl() {
+    getUrl() {
         let explorerUrl = this.web3.network.explorer;
         explorerUrl += explorerUrl.endsWith('/') ? '' : '/';
         explorerUrl += '#/transaction/'+this.id;

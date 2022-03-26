@@ -155,6 +155,16 @@ class TronWeb3 {
         return Utils.toDec(balance._hex, decimals);
     }
 
+    async getTokenInfo(tokenAddress) {
+        let token = await tronLink.tronWeb.contract().at(tokenAddress);
+        let name = await token.decimals().call();
+        let symbol = await token.symbol().call();
+        let decimals = parseFloat((await token.decimals().call()).toString(10));
+        let totalSupply = parseFloat((await token.totalSupply().call()).toString(10));
+
+        return {name, symbol, decimals, totalSupply};
+    }
+
     async getTrxBalance() {
         return parseFloat(tronLink.tronWeb.fromSun(await tronLink.tronWeb.trx.getBalance(this.connectedAccount)));
     }
