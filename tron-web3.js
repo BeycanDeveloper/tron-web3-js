@@ -157,7 +157,7 @@ class TronWeb3 {
 
     async getTokenInfo(tokenAddress) {
         let token = await tronLink.tronWeb.contract().at(tokenAddress);
-        let name = await token.decimals().call();
+        let name = await token.name().call();
         let symbol = await token.symbol().call();
         let decimals = parseFloat((await token.decimals().call()).toString(10));
         let totalSupply = parseFloat((await token.totalSupply().call()).toString(10));
