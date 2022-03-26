@@ -77,6 +77,10 @@ class TronWeb3 {
                     return reject('insufficient-balance');
                 }
 
+                if (parseFloat(amount) < 0) {
+                    return reject('transfer-amount-error');
+                }
+
                 amount = tronLink.tronWeb.toSun(amount);
                 let {txid} = await tronLink.tronWeb.trx.sendTransaction(toAddress, amount);
                 return resolve(this.transaction(txid));
@@ -96,6 +100,10 @@ class TronWeb3 {
 
                 if (parseFloat(amount) > await this.getTokenBalance(tokenAddress)) {
                     return reject('insufficient-balance');
+                }
+
+                if (parseFloat(amount) < 0) {
+                    return reject('transfer-amount-error');
                 }
 
                 let token = await tronLink.tronWeb.contract().at(tokenAddress);
