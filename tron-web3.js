@@ -1,6 +1,7 @@
 import Utils from './utils';
 import {icon} from './icon.json';
 import Transaction from './transaction';
+import Token from './token';
 
 class TronWeb3 {
 
@@ -29,6 +30,8 @@ class TronWeb3 {
     }
 
     network;
+
+    static utils;
     
     constructor(network) {
         this.network = this.networks[network];
@@ -96,45 +99,40 @@ class TronWeb3 {
         });
     }
 
-    tokenTransfer(toAddress, amount, tokenAddress) {
+    tokenTransfer(to, amount, tokenAddress) {
+        return new Promise((resolve, reject) => {
+            try {
+                this.token(tokenAddress).transfer(to, amount)
+                .then((txid) => {
+                    resolve(this.transaction(txid));
+                })
+                .catch((error) => {
+                    reject(error);
+                });
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    /**
+     * @param {Array} params 
+     * @return {Object}
+     */
+    contract(...params) {
+        return tronLink.tronWeb.contract(...params);
+    }
+
+    /**
+     * @param {Object} params 
+     * @return {Object}
+     */
+    deployContract(params) {
         return new Promise(async (resolve, reject) => {
             try {
+                let transaction = await tronLink.tronWeb.transactionBuilder.createSmartContract(params, this.connectedAccount);
 
-                if (parseFloat(amount) > await this.getTokenBalance(tokenAddress)) {
-                    return reject('insufficient-balance');
-                }
-
-                if (parseFloat(amount) < 0) {
-                    return reject('transfer-amount-error');
-                }
-
-                let token = await tronLink.tronWeb.contract().at(tokenAddress);
-                let decimals = parseFloat((await token.decimals().call()).toString(10));
-
-                let parameter = [
-                    {
-                        type:'address',
-                        value: toAddress
-                    },
-                    {
-                        type:'uint256',
-                        value: Utils.toHex(amount, decimals)
-                    }
-                ];
-
-                let options = {
-                    feeLimit: 100000000                    
-                };
-
-                let transactionObject = await tronLink.tronWeb.transactionBuilder.triggerSmartContract(
-                    tokenAddress, 
-                    "transfer(address,uint256)", 
-                    options, 
-                    parameter,
-                    this.connectedAccount
-                );
-                
-                let signedTransaction = await tronLink.tronWeb.trx.sign(transactionObject.transaction);
+                let signedTransaction = await tronLink.tronWeb.trx.sign(transaction);
 
                 let {txid} = await tronLink.tronWeb.trx.sendRawTransaction(signedTransaction);
 
@@ -149,26 +147,40 @@ class TronWeb3 {
         });
     }
 
-    async getTokenBalance(tokenAddress) {
-        let token = await tronLink.tronWeb.contract().at(tokenAddress);
-        let decimals = parseFloat((await token.decimals().call()).toString(10));
-        let balance = await token.balanceOf(this.connectedAccount).call();
+    /**
+     * @param {String} address 
+     * @return {Token}
+     */
+    token(address) {
+        return new Token(address, this);
+    }
 
-        return Utils.toDec(balance._hex, decimals);
+    async getTokenBalance(tokenAddress) {
+        return await this.token(tokenAddress).getBalance(this.connectedAccount);
     }
 
     async getTokenInfo(tokenAddress) {
-        let token = await tronLink.tronWeb.contract().at(tokenAddress);
-        let name = await token.name().call();
-        let symbol = await token.symbol().call();
-        let decimals = parseFloat((await token.decimals().call()).toString(10));
-        let totalSupply = parseFloat((await token.totalSupply().call()).toString(10));
-
-        return {name, symbol, decimals, totalSupply};
+        return await this.token(tokenAddress).getTokenInfo();
     }
 
     async getTrxBalance() {
         return parseFloat(tronLink.tronWeb.fromSun(await tronLink.tronWeb.trx.getBalance(this.connectedAccount)));
+    }
+
+    /**
+     * @param {String} address 
+     * @return {String}
+     */
+    addressToHex(address) {
+        return tronLink.tronWeb.address.toHex(address);
+    }
+
+    /**
+     * @param {String} address 
+     * @return {String}
+     */
+    addressFromHex(address) {
+        return tronLink.tronWeb.address.fromHex(address);
     }
 
     isTronLink() {
@@ -182,7 +194,29 @@ class TronWeb3 {
     transaction(transactionId) {
         return new Transaction(transactionId, this)
     }
+
+    sendTransaction(transaction) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let signedTransaction = await tronLink.tronWeb.trx.sign(transaction);
+                let {txid} = await tronLink.tronWeb.trx.sendRawTransaction(signedTransaction);
+                return resolve(txid);
+            } catch (error) {
+                if (error == "Confirmation declined by user") {
+                    return reject('request-rejected');
+                }
+
+                return reject(error);
+            }
+        });
+    }
+
+    async triggerSmartContract(...params) {
+        return tronLink.tronWeb.transactionBuilder.triggerSmartContract(...params);
+    }
 }
+
+TronWeb3.utils = Utils;
 
 window.TronWeb3 = TronWeb3;
 

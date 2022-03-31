@@ -1,6 +1,6 @@
 {
   "name": "tron-web3",
-  "version": "1.0.8",
+  "version": "1.1.0",
   "description": "Tron has ready-made methods to connect to wallets and perform many transactions.",
   "targets": {
     "frontend": {

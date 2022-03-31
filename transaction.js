@@ -68,6 +68,36 @@ class Transaction {
     }
 
     /**
+     * @returns {String|Object}
+     */
+    wait(timer = 1) {
+        return new Promise((resolve, reject) => {
+            let checkerInterval = setInterval(async () => {
+                try {
+                    await this.getDataFromExplorer();
+
+                    if (this.data.info.blockNumber) {
+                        if (this.data.ret[0].contractRet == 'REVERT') {
+                            clearInterval(checkerInterval);
+                            reject('failed');
+                        } else if (this.data.info.result == 'FAILED') {
+                            clearInterval(checkerInterval);
+                            reject('failed');
+                        } else {
+                            clearInterval(checkerInterval);
+                            resolve('success');
+                        }
+                    }
+
+                } catch (error) {
+                    clearInterval(checkerInterval);
+                    return reject(error);
+                }
+            }, (timer*1000));
+        });
+    }
+
+    /**
      * @param {Integer} timer 
      * @returns {String|Object}
      */
@@ -150,12 +180,13 @@ class Transaction {
      * @param {String} receiver
      * @param {Integer} amount
      * @param {String|null} tokenAddress
+     * @param {Integer} timer
      * @returns {String}
      */
-    verifyWithData(receiver, amount, tokenAddress = null) {
+    verifyWithData(receiver, amount, tokenAddress = null, timer = 1) {
         return new Promise((resolve, reject) => {
-            this.verify()
-            .then(async (result) => {
+            this.verify(timer)
+            .then(async () => {
                 result = await this.verifyData(receiver, amount, tokenAddress);
                 if (result = 'verified') {
                     resolve('verified');
